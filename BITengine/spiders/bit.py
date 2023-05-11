@@ -30,6 +30,7 @@ class BITSpider(scrapy.Spider):
         
     def parse(self, response):
         # if url end with docx, doc, xls, zip, or pdf, then do something else.
+        # if is video or image, don't download.
         if response.url.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip'}:
             pass
         else:
