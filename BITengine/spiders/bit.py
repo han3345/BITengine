@@ -10,6 +10,9 @@ class BITSpider(scrapy.Spider):
         'https://www.bit.edu.cn/',
     ]
 
+    allowed_domains=[
+        'bit.edu.cn',
+    ]
 
     subdir='htmlSource'
     if not os.path.exists(subdir):
@@ -17,7 +20,7 @@ class BITSpider(scrapy.Spider):
 
     def start_requests(self):
         for u in self.start_urls:
-            yield scrapy.Request(u,callback=self.parse,errback=self.errorback,dont_filter=True)
+            yield scrapy.Request(u,callback=self.parse,errback=self.errorback)
 
     def errorback(self,failure):
         # self.dead_links.add(failure.request.url)
@@ -57,17 +60,7 @@ class BITSpider(scrapy.Spider):
             if 'javascript' in suburl:
                 continue
 
-            if 'http' not in suburl:# it's a relative url
-                yield response.follow(suburl, callback=self.parse,errback=self.errorback)
-                continue
-
-            if 'bit'  in suburl: # do not crawl non-bit domains
-                yield response.follow(suburl, callback=self.parse,errback=self.errorback)  
-                continue
-
             if 'mailto' in suburl: # do not crawl non-bit domains
                 continue
 
-            # if 'mp.weixin.qq.com' in suburl:
-            #     yield response.follow(suburl, callback=self.parse,errback=self.errorback)
-            #     continue
+            yield response.follow(suburl, callback=self.parse,errback=self.errorback)
