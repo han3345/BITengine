@@ -4,13 +4,12 @@ from urllib.parse import urlparse
 
 class BITSpider(scrapy.Spider):
     name = "bit"
-    with open ('other_utility/bitrenLinks.txt') as f:
-        start_urls=f.readlines()
-    # start_urls = [
-    #     'https://www.bit.edu.cn/',
-    # ]
+    # with open ('other_utility/bitrenLinks.txt') as f:
+    #     start_urls=f.readlines()
+    start_urls = [
+        'https://www.bit.edu.cn/',
+    ]
 
-    dead_links=set()
 
     subdir='htmlSource'
     if not os.path.exists(subdir):
@@ -21,37 +20,54 @@ class BITSpider(scrapy.Spider):
             yield scrapy.Request(u,callback=self.parse,errback=self.errorback,dont_filter=True)
 
     def errorback(self,failure):
-        self.dead_links.add(failure.request.url)
+        # self.dead_links.add(failure.request.url)
         yield{
-            'error response': failure.value.response,
+            # 'error response': failure.value.response,
             'url': failure.request.url
         }
+        with open('error_url.txt', 'a') as h:
+                h.write(failure.request.url)
+                # h.write(failure.value.response)
         
-        
-    def parse(self, response):
-        # if url end with docx, doc, xls, zip, or pdf, then do something else.
-        # if is video or image, don't download.
-        if response.url.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip'}:
-            pass
-        else:
-            filename = response.url.replace("/",'_')[7:]
-            if filename[0]=='_':
-                filename=filename[1:]
-            if filename[-1]=='_':
-                filename=filename[:-1]+'.html'
-            filepath=os.path.join(self.subdir,filename)
-            with open(filepath, 'wb') as f:
-                f.write(response.body)
+    def parse(self, response):        
+        filename = response.url.replace("/",'_')[7:]
+        if filename[0]=='_':
+            filename=filename[1:]
+        if filename[-1]=='_':
+            filename=filename[:-1]+'.html'
+        # filepath=os.path.join(self.subdir,filename)
+        # with open(filepath, 'wb') as f:
+        #     f.write(response.body)
 
         yield {     # return some results
             'url': response.url,
+            'filename': filename,
             # 'title': response.css('title::text')
         }
 
-        urls = response.css('a::attr(href)')   # find all sub urls
-        for url in urls:
-            text=url.get()
-            if 'http' not in text:# it's a relative url
-                yield response.follow(url, callback=self.parse)  
-            elif 'bit' in text: # do not crawl non-bit domains
-                yield response.follow(url, callback=self.parse)  
+        suburls = response.css('a::attr(href)').getall()  # find all sub urls
+        for suburl in suburls:
+        # if url end with docx, doc, xls, zip, or pdf, then do something else.
+        # if is video or image, don't download.
+            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip'}:
+                with open('file_url.txt','a') as g:
+                    g.write(suburl)
+                continue
+            
+            if 'javascript' in suburl:
+                continue
+
+            if 'http' not in suburl:# it's a relative url
+                yield response.follow(suburl, callback=self.parse,errback=self.errorback)
+                continue
+
+            if 'bit'  in suburl: # do not crawl non-bit domains
+                yield response.follow(suburl, callback=self.parse,errback=self.errorback)  
+                continue
+
+            if 'mailto' in suburl: # do not crawl non-bit domains
+                continue
+
+            # if 'mp.weixin.qq.com' in suburl:
+            #     yield response.follow(suburl, callback=self.parse,errback=self.errorback)
+            #     continue
