@@ -40,8 +40,19 @@ class BITSpider(scrapy.Spider):
             if filename[-1]=='_':
                 filename=filename[:-1]+'.html'
             filepath=os.path.join(self.subdir,filename)
+            #
+            name_text = response.css("meta").xpath("@name").getall()
+            content_text = response.css("meta").xpath("@content").getall()
+            html_text = response.css("a").xpath("@href").getall()
+            title = response.xpath("//title/text()").get() 
+            #sel = scrapy.Selector(text=response.body)
+            #title_text = sel.xpath('//title/text()').get()
             with open(filepath, 'wb') as f:
-                f.write(response.body)
+                f.writelines(title+'\n')
+                f.writelines(name+'\n'  for name in name_text)
+                f.writelines(content+'\n' for content in content_text)
+                f.writelines(html+'\n' for html in html_text)
+
 
         yield {     # return some results
             'url': response.url,
