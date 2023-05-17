@@ -1,10 +1,10 @@
+http://www.bit.edu.cn
 http://www.bitunion.org
 http://bitpt.cn/bbs
 http://bitpt.cn/
 http://ca.bit.edu.cn/
 http://i.bit.edu.cn/
 http://xyzd.info.bit.edu.cn/
-http://www.bit.edu.cn/
 http://10.0.0.55:8800/
 https://mail.bit.edu.cn/
 http://ccyl.bit.edu.cn/

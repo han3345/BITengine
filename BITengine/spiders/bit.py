@@ -4,13 +4,15 @@ from urllib.parse import urlparse
 
 class BITSpider(scrapy.Spider):
     name = "bit"
-    with open ('other_utility/bitrenLinks.txt') as f:
-        start_urls=f.readlines()
-    # start_urls = [
-    #     'https://www.bit.edu.cn/',
-    # ]
+    # with open ('other_utility/bitrenLinks.txt') as f:
+    #     start_urls=f.readlines()
+    start_urls = [
+        'https://www.bit.edu.cn/',
+    ]
 
-    dead_links=set()
+    allowed_domains=[
+        'bit.edu.cn',
+    ]
 
     subdir='htmlSource'
     if not os.path.exists(subdir):
@@ -18,15 +20,17 @@ class BITSpider(scrapy.Spider):
 
     def start_requests(self):
         for u in self.start_urls:
-            yield scrapy.Request(u,callback=self.parse,errback=self.errorback,dont_filter=True)
+            yield scrapy.Request(u,callback=self.parse,errback=self.errorback)
 
     def errorback(self,failure):
-        self.dead_links.add(failure.request.url)
+        # self.dead_links.add(failure.request.url)
         yield{
-            'error response': failure.value.response,
-            'url': failure.request.url
+            # 'error response': failure.value.response,
+            'error url': failure.request.url
         }
-        
+        with open('error_url.txt', 'a') as h:
+                h.write(failure.request.url+'\n')
+                # h.write(failure.value.response)
         
     def parse(self, response):
         # if url end with docx, doc, xls, zip, or pdf, then do something else.
@@ -56,13 +60,23 @@ class BITSpider(scrapy.Spider):
 
         yield {     # return some results
             'url': response.url,
+            # 'filename': filename,
             # 'title': response.css('title::text')
         }
 
-        urls = response.css('a::attr(href)')   # find all sub urls
-        for url in urls:
-            text=url.get()
-            if 'http' not in text:# it's a relative url
-                yield response.follow(url, callback=self.parse)  
-            elif 'bit' in text: # do not crawl non-bit domains
-                yield response.follow(url, callback=self.parse)  
+        suburls = response.css('a::attr(href)').getall()  # find all sub urls
+        for suburl in suburls:
+        # if url end with docx, doc, xls, zip, or pdf, then do something else.
+        # if is video or image, don't download.
+            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip','rar','jpg','jpeg','gif','png','svg','mp4','mov','avi','flv','mkv','mp3','wma','exe','msi','pkg','iso','dmg'}:
+                with open('file_url.txt','a') as g:
+                    g.write(suburl+'\n')
+                continue
+            
+            if 'javascript' in suburl:
+                continue
+
+            if 'mailto' in suburl: # do not crawl non-bit domains
+                continue
+
+            yield response.follow(suburl, callback=self.parse,errback=self.errorback)
