@@ -26,10 +26,10 @@ class BITSpider(scrapy.Spider):
         # self.dead_links.add(failure.request.url)
         yield{
             # 'error response': failure.value.response,
-            'url': failure.request.url
+            'error url': failure.request.url
         }
         with open('error_url.txt', 'a') as h:
-                h.write(failure.request.url)
+                h.write(failure.request.url+'\n')
                 # h.write(failure.value.response)
         
     def parse(self, response):        
@@ -44,7 +44,7 @@ class BITSpider(scrapy.Spider):
 
         yield {     # return some results
             'url': response.url,
-            'filename': filename,
+            # 'filename': filename,
             # 'title': response.css('title::text')
         }
 
@@ -52,9 +52,9 @@ class BITSpider(scrapy.Spider):
         for suburl in suburls:
         # if url end with docx, doc, xls, zip, or pdf, then do something else.
         # if is video or image, don't download.
-            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip'}:
+            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip','rar','jpg','jpeg','gif','png','svg','mp4','mov','avi','flv','mkv'}:
                 with open('file_url.txt','a') as g:
-                    g.write(suburl)
+                    g.write(suburl+'\n')
                 continue
             
             if 'javascript' in suburl:
