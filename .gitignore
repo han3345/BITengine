@@ -2,3 +2,5 @@
 *.pyc
 test.py
 bit.jl
+error_url.txt
+file_url.txt

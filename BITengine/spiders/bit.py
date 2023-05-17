@@ -52,7 +52,7 @@ class BITSpider(scrapy.Spider):
         for suburl in suburls:
         # if url end with docx, doc, xls, zip, or pdf, then do something else.
         # if is video or image, don't download.
-            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip','rar','jpg','jpeg','gif','png','svg','mp4','mov','avi','flv','mkv'}:
+            if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip','rar','jpg','jpeg','gif','png','svg','mp4','mov','avi','flv','mkv','mp3','wma','exe','msi','pkg','iso','dmg'}:
                 with open('file_url.txt','a') as g:
                     g.write(suburl+'\n')
                 continue
