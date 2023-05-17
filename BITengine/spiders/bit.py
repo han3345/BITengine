@@ -52,15 +52,16 @@ class BITSpider(scrapy.Spider):
         for suburl in suburls:
         # if url end with docx, doc, xls, zip, or pdf, then do something else.
         # if is video or image, don't download.
+        # why not only download htm, html and php?
             if suburl.split('.')[-1] in {'pdf','doc','docx','ppt','pptx','xls','xlsx','zip','rar','jpg','jpeg','gif','png','svg','mp4','mov','avi','flv','mkv','mp3','wma','exe','msi','pkg','iso','dmg'}:
                 with open('file_url.txt','a') as g:
                     g.write(suburl+'\n')
                 continue
             
-            if 'javascript' in suburl:
+            if 'javascript' in suburl:# ignore javascript:void(0) urls.
                 continue
 
-            if 'mailto' in suburl: # do not crawl non-bit domains
+            if 'mailto' in suburl: #do not crawl mailto urls.
                 continue
 
             yield response.follow(suburl, callback=self.parse,errback=self.errorback)
